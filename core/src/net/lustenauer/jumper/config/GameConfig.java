@@ -7,6 +7,9 @@ public class GameConfig {
     public static final float WIDTH = 480f; //pixels
     public static final float HEIGHT = 800f; // pixels
 
+    public static final float HUD_WIDTH = 480f; // world units
+    public static final float HUD_HEIGHT = 800f;
+
     public static final float WORLD_WIDTH = 16f; // world units
     public static final float WORLD_HEIGHT = 24f; // world units
 
@@ -30,7 +33,6 @@ public class GameConfig {
     public static final float COIN_HALF_SIZE = COIN_SIZE / 2f;
     public static final float COIN_SPAWN_TIME = 1.25f;
     public static final float MAX_COINS = 2;
-
 
 
     private GameConfig() {
