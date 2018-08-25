@@ -38,7 +38,7 @@ public class Monster extends EntityBase {
             }
         }
 
-        angleDeg += angleDegSpeed + delta;
+        angleDeg += angleDegSpeed * delta;
         angleDeg = angleDeg % 360;
 
         float radius = GameConfig.PLANET_HALF_SIZE + speed;

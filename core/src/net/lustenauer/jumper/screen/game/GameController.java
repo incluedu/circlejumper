@@ -106,26 +106,77 @@ public class GameController {
     private void spawnCoins(float delta) {
         coinTimer += delta;
 
-        // only max coins allowed
-        if (coins.size >= GameConfig.MAX_COINS) {
-            coinTimer = 0;
+        if (coinTimer < GameConfig.COIN_SPAWN_TIME) {
             return;
         }
 
-        if (coinTimer >= GameConfig.COIN_SPAWN_TIME) {
-            coinTimer = 0;
-            Coin coin = coinPool.obtain();
-            float randomAngle = MathUtils.random(360);
-            coin.setAngleDeg(randomAngle);
-            coins.add(coin);
+        coinTimer = 0;
+
+        if (coins.size == 0) {
+            addCoins();
         }
+    }
+
+    private void addCoins() {
+        int count = MathUtils.random(GameConfig.MAX_COINS);
+
+        for (int i = 0; i < count; i++) {
+            float randomAngle = MathUtils.random(360);
+
+            boolean canSpawn = !isCoinNearBy(randomAngle)
+                    && !isMonsterNearBy(randomAngle);
+
+            if (canSpawn) {
+                Coin coin = coinPool.obtain();
+
+                if (isObstacleNearBy(randomAngle)) {
+                    coin.setOffset(true);
+                }
+
+                coin.setAngleDeg(randomAngle);
+                coins.add(coin);
+            }
+        }
+    }
+
+    private boolean isCoinNearBy(float angle) {
+        //check that there are now coins nearby min dist
+        for (Coin coin : coins) {
+            float angleDeg = coin.getAngleDeg();
+            float diff = Math.abs(Math.abs(angleDeg) - Math.abs(angle));
+            if (diff < GameConfig.MIN_ANG_DIST) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isMonsterNearBy(float angle) {
+        //check that there are now Monster nearby min dist
+        float diff = Math.abs(Math.abs(monster.getAngleDeg()) - Math.abs(angle));
+        if (diff < GameConfig.MIN_ANG_DIST) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isObstacleNearBy(float angle) {
+        //check that there are now obstacles nearby min dist
+        for (Obstacle obstacle : obstacles) {
+            float angleDeg = obstacle.getAngleDeg();
+            float diff = Math.abs(Math.abs(angleDeg) - Math.abs(angle));
+            if (diff < GameConfig.MIN_ANG_DIST) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void spawnObstacles(float delta) {
         obstacleTimer += delta;
 
         // only max obstacles allowed
-        if (obstacles.size >= GameConfig.MAX_OBSTACLE) {
+        if (obstacles.size >= GameConfig.MAX_OBSTACLES) {
             obstacleTimer = 0;
             return;
         }

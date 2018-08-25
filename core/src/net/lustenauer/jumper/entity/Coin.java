@@ -9,6 +9,7 @@ public class Coin extends EntityBase implements Pool.Poolable {
 
     /* ATTRIBUTES */
     private float angleDeg;
+    private boolean offset;
 
     /* CONSTRUCTORS */
     public Coin() {
@@ -20,11 +21,16 @@ public class Coin extends EntityBase implements Pool.Poolable {
         angleDeg = value % 360;
 
         float radius = GameConfig.PLANET_HALF_SIZE;
+
+        if (offset) {
+            radius += GameConfig.CELL_SIZE;
+        }
+
         float originX = GameConfig.WORLD_CENTER_X;
         float originY = GameConfig.WORLD_CENTER_Y;
 
-        float newX = originX + MathUtils.cosDeg(-angleDeg)*radius;
-        float newY = originY + MathUtils.sinDeg(-angleDeg)*radius;
+        float newX = originX + MathUtils.cosDeg(-angleDeg) * radius;
+        float newY = originY + MathUtils.sinDeg(-angleDeg) * radius;
 
         setPosition(newX, newY);
 
@@ -34,8 +40,12 @@ public class Coin extends EntityBase implements Pool.Poolable {
         return angleDeg;
     }
 
+    public void setOffset(boolean offset) {
+        this.offset = offset;
+    }
+
     @Override
     public void reset() {
-
+        offset = false;
     }
 }
