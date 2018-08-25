@@ -25,7 +25,7 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void show() {
         controller = new GameController();
-        renderer = new GameRenderer(controller);
+        renderer = new GameRenderer(controller, game.getBatch(), assetManager);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void resize(int width, int height) {
-        renderer.resize(width,height);
+        renderer.resize(width, height);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.Pools;
 import net.lustenauer.jumper.config.GameConfig;
 import net.lustenauer.jumper.entity.Coin;
 import net.lustenauer.jumper.entity.Monster;
+import net.lustenauer.jumper.entity.Obstacle;
 import net.lustenauer.jumper.entity.Planet;
 
 public class GameController {
@@ -27,6 +28,11 @@ public class GameController {
     private final Array<Coin> coins = new Array<Coin>();
     private final Pool<Coin> coinPool = Pools.get(Coin.class, 10);
     private float coinTimer;
+
+    private final Array<Obstacle> obstacles = new Array<Obstacle>();
+    private final Pool<Obstacle> obstaclePool = Pools.get(Obstacle.class, 10);
+    private float obstacleTimer;
+
 
     /* CONSTRUCTORS */
 
@@ -57,6 +63,7 @@ public class GameController {
 
         monster.update(delta);
 
+        spawnObstacles(delta);
         spawnCoins(delta);
 
     }
@@ -74,12 +81,16 @@ public class GameController {
         return coins;
     }
 
+    public Array<Obstacle> getObstacles() {
+        return obstacles;
+    }
+
     /* PRIVATE METHODS */
     private void spawnCoins(float delta) {
         coinTimer += delta;
 
         // only max coins allowed
-        if (coins.size >= GameConfig.MAX_COINS){
+        if (coins.size >= GameConfig.MAX_COINS) {
             coinTimer = 0;
             return;
         }
@@ -90,6 +101,24 @@ public class GameController {
             float randomAngle = MathUtils.random(360);
             coin.setAngleDeg(randomAngle);
             coins.add(coin);
+        }
+    }
+
+    private void spawnObstacles(float delta) {
+        obstacleTimer += delta;
+
+        // only max obstacles allowed
+        if (obstacles.size >= GameConfig.MAX_OBSTACLE) {
+            obstacleTimer = 0;
+            return;
+        }
+
+        if (coinTimer >= GameConfig.OBSTACLE_SPAWN_TIME) {
+            obstacleTimer = 0;
+            Obstacle obstacle = obstaclePool.obtain();
+            float randomAngle = MathUtils.random(360);
+            obstacle.setAngleDeg(randomAngle);
+            obstacles.add(obstacle);
         }
     }
 
