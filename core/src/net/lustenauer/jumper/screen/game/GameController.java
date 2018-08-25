@@ -2,11 +2,13 @@ package net.lustenauer.jumper.screen.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
+import net.lustenauer.jumper.common.GameManager;
 import net.lustenauer.jumper.config.GameConfig;
 import net.lustenauer.jumper.entity.Coin;
 import net.lustenauer.jumper.entity.Monster;
@@ -33,6 +35,8 @@ public class GameController {
     private final Pool<Obstacle> obstaclePool = Pools.get(Obstacle.class, 10);
     private float obstacleTimer;
 
+    private float startWaitTimer = GameConfig.START_WAIT_TIME;
+
 
     /* CONSTRUCTORS */
 
@@ -57,6 +61,13 @@ public class GameController {
 
     /* PUBLIC METHODS */
     public void update(float delta) {
+        if (startWaitTimer > 0) {
+            startWaitTimer -= delta;
+            return;
+        }
+
+        GameManager.INSTANCE.updateDisplayScore(delta);
+
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && monster.isWalking()) {
             monster.jump();
         }
@@ -65,6 +76,8 @@ public class GameController {
 
         spawnObstacles(delta);
         spawnCoins(delta);
+
+        checkCollision();
 
     }
 
@@ -83,6 +96,10 @@ public class GameController {
 
     public Array<Obstacle> getObstacles() {
         return obstacles;
+    }
+
+    public float getStartWaitTimer() {
+        return startWaitTimer;
     }
 
     /* PRIVATE METHODS */
@@ -113,13 +130,55 @@ public class GameController {
             return;
         }
 
-        if (coinTimer >= GameConfig.OBSTACLE_SPAWN_TIME) {
+        if (obstacleTimer >= GameConfig.OBSTACLE_SPAWN_TIME) {
             obstacleTimer = 0;
             Obstacle obstacle = obstaclePool.obtain();
             float randomAngle = MathUtils.random(360);
             obstacle.setAngleDeg(randomAngle);
             obstacles.add(obstacle);
         }
+    }
+
+    private void checkCollision() {
+        // player <--> coins
+        for (int i = 0; i < coins.size; i++) {
+            Coin coin = coins.get(i);
+
+            if (Intersector.overlaps(monster.getBounds(), coin.getBounds())) {
+                GameManager.INSTANCE.addScore(GameConfig.COIN_SCORE);
+                coinPool.free(coin);
+                coins.removeIndex(i);
+            }
+        }
+
+        // player <--> obstacle
+        for (int i = 0; i < obstacles.size; i++) {
+            Obstacle obstacle = obstacles.get(i);
+
+            if (Intersector.overlaps(monster.getBounds(), obstacle.getSensor())) {
+                GameManager.INSTANCE.addScore(GameConfig.OBSTACLE_SCORE);
+                obstaclePool.free(obstacle);
+                obstacles.removeIndex(i);
+            } else if (Intersector.overlaps(monster.getBounds(), obstacle.getBounds())) {
+                restart();
+            }
+
+        }
+    }
+
+    private void restart() {
+        coinPool.freeAll(coins);
+        coins.clear();
+
+        obstaclePool.freeAll(obstacles);
+        obstacles.clear();
+
+        monster.reset();
+        monster.setPosition(monsterStartX, monsterStartY);
+
+        GameManager.INSTANCE.reset();
+        startWaitTimer = GameConfig.START_WAIT_TIME;
+
     }
 
 }
