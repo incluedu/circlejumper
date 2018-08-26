@@ -66,6 +66,8 @@ public class Monster extends EntityBase {
 
     public void reset(){
         angleDeg = GameConfig.START_ANGLE;
+        speed = 0;
+        walk();
     }
 
 

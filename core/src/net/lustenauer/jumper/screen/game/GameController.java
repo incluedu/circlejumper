@@ -36,6 +36,7 @@ public class GameController {
     private float obstacleTimer;
 
     private float startWaitTimer = GameConfig.START_WAIT_TIME;
+    private float animationTime;
 
 
     /* CONSTRUCTORS */
@@ -64,6 +65,8 @@ public class GameController {
 
     /* PUBLIC METHODS */
     public void update(float delta) {
+        animationTime += delta;
+
         if (startWaitTimer > 0) {
             startWaitTimer -= delta;
             return;
@@ -103,6 +106,10 @@ public class GameController {
 
     public float getStartWaitTimer() {
         return startWaitTimer;
+    }
+
+    public float getAnimationTime() {
+        return animationTime;
     }
 
     /* PRIVATE METHODS */
@@ -247,6 +254,8 @@ public class GameController {
         GameManager.INSTANCE.updateHighScore();
         GameManager.INSTANCE.reset();
         startWaitTimer = GameConfig.START_WAIT_TIME;
+        animationTime = 0;
+
 
     }
 
