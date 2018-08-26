@@ -15,18 +15,19 @@ public class Planet {
     private Circle bounds;
 
     /* CONSTRUCTORS */
-    public Planet(){
-        bounds = new Circle(x,y,GameConfig.PLANET_HALF_SIZE);
+    public Planet() {
+        bounds = new Circle(x, y, GameConfig.PLANET_HALF_SIZE);
+        setSize(GameConfig.PLANET_SIZE, GameConfig.PLANET_SIZE);
     }
 
     /* PUBLIC METHODS */
-    public void setPosition(float x, float y){
+    public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
         updateBounds();
     }
 
-    public void setSize(float width, float height){
+    public void setSize(float width, float height) {
         this.width = width;
         this.height = height;
         updateBounds();
@@ -73,13 +74,13 @@ public class Planet {
     }
 
 
-    public void updateBounds(){
-        bounds.setPosition(x,y);
+    public void updateBounds() {
+        float halfWidth = getWidth() / 2f;
+        float halfHight = getHeight() / 2f;
+        bounds.setPosition(x + halfWidth, y + halfHight);
     }
 
     /* PRIVATE METHODS */
-
-
 
 
 }

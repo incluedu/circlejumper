@@ -46,6 +46,7 @@ public class LoadingScreen extends ScreenAdapter {
         renderer = new ShapeRenderer();
 
         assetManager.load(AssetDescriptors.FONT);
+        assetManager.load(AssetDescriptors.GAME_PLAY);
     }
 
     @Override
@@ -95,11 +96,11 @@ public class LoadingScreen extends ScreenAdapter {
     }
 
     private void draw() {
-        float prgressBarX = (GameConfig.HUD_WIDTH - PROGRESS_BAR_WIDTH) / 2f;
+        float progressBarX = (GameConfig.HUD_WIDTH - PROGRESS_BAR_WIDTH) / 2f;
         float progressBarY = (GameConfig.HUD_HEIGHT - PROGRESS_BAR_HEIGHT) / 2;
 
         renderer.rect(
-                prgressBarX, progressBarY,
+                progressBarX, progressBarY,
                 progress * PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT
         );
     }

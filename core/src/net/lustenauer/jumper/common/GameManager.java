@@ -1,9 +1,16 @@
 package net.lustenauer.jumper.common;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+import net.lustenauer.jumper.CircleJumperGame;
+
 public class GameManager {
 
     /* CONSTANTS */
     public static final GameManager INSTANCE = new GameManager();
+
+    private static final String HIGH_SCORE_KEY = "highScore";
+
 
     /* ATTRIBUTES */
     private int score;
@@ -11,9 +18,13 @@ public class GameManager {
     private int highScore;
     private int displayHighScore;
 
+    private Preferences prefs;
+
     /* CONSTRUCTORS */
     private GameManager() {
-
+        prefs = Gdx.app.getPreferences(CircleJumperGame.class.getSimpleName());
+        highScore = prefs.getInteger(HIGH_SCORE_KEY, 0);
+        displayHighScore = highScore;
     }
 
     /* PUBLIC METHODS */
@@ -28,6 +39,16 @@ public class GameManager {
         if (score > highScore) {
             highScore = score;
         }
+    }
+
+    public void updateHighScore() {
+        if (score < highScore) {
+            return;
+        }
+
+        highScore = score;
+        prefs.putInteger(HIGH_SCORE_KEY, highScore);
+        prefs.flush();
     }
 
     public void updateDisplayScore(float delta) {

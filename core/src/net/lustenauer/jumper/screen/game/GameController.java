@@ -47,7 +47,10 @@ public class GameController {
     /* INIT */
     private void init() {
         planet = new Planet();
-        planet.setPosition(GameConfig.WORLD_CENTER_X, GameConfig.WORLD_CENTER_Y);
+        planet.setPosition(
+                GameConfig.WORLD_CENTER_X - GameConfig.PLANET_HALF_SIZE,
+                GameConfig.WORLD_CENTER_Y - GameConfig.PLANET_HALF_SIZE
+        );
 
         monsterStartX = GameConfig.WORLD_CENTER_X - GameConfig.MONSTER_HALF_SIZE;
         monsterStartY = GameConfig.WORLD_CENTER_Y + GameConfig.PLANET_HALF_SIZE;
@@ -241,6 +244,7 @@ public class GameController {
         monster.reset();
         monster.setPosition(monsterStartX, monsterStartY);
 
+        GameManager.INSTANCE.updateHighScore();
         GameManager.INSTANCE.reset();
         startWaitTimer = GameConfig.START_WAIT_TIME;
 
