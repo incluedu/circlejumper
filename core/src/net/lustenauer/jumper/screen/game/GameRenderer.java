@@ -17,6 +17,7 @@ import net.lustenauer.gdx.util.ViewportUtils;
 import net.lustenauer.gdx.util.debug.DebugCameraController;
 import net.lustenauer.jumper.assets.AssetDescriptors;
 import net.lustenauer.jumper.assets.RegionNames;
+import net.lustenauer.jumper.common.FloatingScore;
 import net.lustenauer.jumper.common.GameManager;
 import net.lustenauer.jumper.common.GameState;
 import net.lustenauer.jumper.config.GameConfig;
@@ -334,10 +335,23 @@ public class GameRenderer implements Disposable {
             layout.setText(font, waitTimeString);
             font.draw(
                     batch, layout,
-                    (GameConfig.HUD_WIDTH - layout.width) / 2, (GameConfig.HUD_HEIGHT + layout.height) / 2
+                    (GameConfig.HUD_WIDTH - layout.width) / 2f, (GameConfig.HUD_HEIGHT + layout.height) / 2f
             );
         }
 
+        // floating score
+        Color oldFontColor = new Color(font.getColor());
 
+        for (FloatingScore floatingScore : controller.getFloatingScores()) {
+            layout.setText(font, floatingScore.getScoreString());
+            font.setColor(floatingScore.getColor());
+            font.draw(
+                    batch, layout,
+                    floatingScore.getX() - layout.width / 2f, floatingScore.getY() - layout.height / 2f
+                );
+
+        }
+
+        font.setColor(oldFontColor);
     }
 }
