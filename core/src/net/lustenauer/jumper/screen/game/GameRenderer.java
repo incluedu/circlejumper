@@ -1,5 +1,6 @@
 package net.lustenauer.jumper.screen.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -7,6 +8,8 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -15,11 +18,14 @@ import net.lustenauer.gdx.util.debug.DebugCameraController;
 import net.lustenauer.jumper.assets.AssetDescriptors;
 import net.lustenauer.jumper.assets.RegionNames;
 import net.lustenauer.jumper.common.GameManager;
+import net.lustenauer.jumper.common.GameState;
 import net.lustenauer.jumper.config.GameConfig;
 import net.lustenauer.jumper.entity.Coin;
 import net.lustenauer.jumper.entity.Monster;
 import net.lustenauer.jumper.entity.Obstacle;
 import net.lustenauer.jumper.entity.Planet;
+import net.lustenauer.jumper.screen.menu.GameOverOverlay;
+import net.lustenauer.jumper.screen.menu.MenuOverlay;
 
 public class GameRenderer implements Disposable {
 
@@ -46,6 +52,10 @@ public class GameRenderer implements Disposable {
     private Animation<TextureRegion> coinAnimation;
     private Animation<TextureRegion> monsterAnimation;
 
+    private Stage hudStage;
+    private MenuOverlay menuOverlay;
+    private GameOverOverlay gameOverOverlay;
+
 
     /* CONSTRUCTORS */
     public GameRenderer(GameController controller, SpriteBatch batch, AssetManager assetManager) {
@@ -62,8 +72,12 @@ public class GameRenderer implements Disposable {
         renderer = new ShapeRenderer();
 
         hudViewport = new FitViewport(GameConfig.HUD_WIDTH, GameConfig.HUD_HEIGHT);
+        hudStage = new Stage(hudViewport, batch);
+
 
         font = assetManager.get(AssetDescriptors.FONT);
+
+        Skin skin = assetManager.get(AssetDescriptors.SKIN);
 
         debugCameraController = new DebugCameraController();
         debugCameraController.setStartPosition(GameConfig.WORLD_CENTER_X, GameConfig.WORLD_CENTER_Y);
@@ -78,17 +92,26 @@ public class GameRenderer implements Disposable {
                 Animation.PlayMode.LOOP_PINGPONG
         );
         coinAnimation = new Animation<TextureRegion>(
-                0.2f,
+                0.5f,
                 gamePlayAtlas.findRegions(RegionNames.COIN),
-                Animation.PlayMode.LOOP
+                Animation.PlayMode.LOOP_PINGPONG
         );
 
 
         monsterAnimation = new Animation<TextureRegion>(
                 0.3f,
                 gamePlayAtlas.findRegions(RegionNames.MONSTER),
-                Animation.PlayMode.LOOP
+                Animation.PlayMode.LOOP_PINGPONG
         );
+
+        menuOverlay = new MenuOverlay(skin, controller.getCallback());
+        gameOverOverlay = new GameOverOverlay(skin, controller.getCallback());
+
+        hudStage.addActor(menuOverlay);
+        hudStage.addActor(gameOverOverlay);
+        // hudStage.setDebugAll(true);
+
+        Gdx.input.setInputProcessor(hudStage);
     }
 
 
@@ -98,7 +121,7 @@ public class GameRenderer implements Disposable {
         debugCameraController.applyTo(camera);
 
         renderGamePlay(delta);
-        rendererDebug();
+        // rendererDebug();
         renderHud();
 
     }
@@ -137,14 +160,6 @@ public class GameRenderer implements Disposable {
                 GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT
         );
 
-        // planet
-        Planet planet = controller.getPlanet();
-        batch.draw(
-                planetRegion,
-                planet.getX(), planet.getY(),
-                planet.getWidth(), planet.getHeight()
-        );
-
         // obstacles
         TextureRegion obstacleRegion = obstacleAnimation.getKeyFrame(controller.getAnimationTime());
         for (Obstacle obstacle : controller.getObstacles()) {
@@ -158,6 +173,14 @@ public class GameRenderer implements Disposable {
             );
         }
 
+        // planet
+        Planet planet = controller.getPlanet();
+        batch.draw(
+                planetRegion,
+                planet.getX(), planet.getY(),
+                planet.getWidth(), planet.getHeight()
+        );
+
         // coins
         TextureRegion coinRegion = coinAnimation.getKeyFrame(controller.getAnimationTime());
         for (Coin coin : controller.getCoins()) {
@@ -166,7 +189,7 @@ public class GameRenderer implements Disposable {
                     coin.getX(), coin.getY(),
                     0, 0,
                     coin.getWidth(), coin.getHeight(),
-                    1, 1,
+                    coin.getScale(), coin.getScale(),
                     GameConfig.START_ANGLE - coin.getAngleDeg()
             );
         }
@@ -226,7 +249,7 @@ public class GameRenderer implements Disposable {
                     coinBounds.x, coinBounds.y,
                     0, 0,
                     coinBounds.width, coinBounds.height,
-                    1, 1,
+                    coin.getScale(), coin.getScale(),
                     GameConfig.START_ANGLE - coin.getAngleDeg()
             );
         }
@@ -263,12 +286,28 @@ public class GameRenderer implements Disposable {
     private void renderHud() {
         hudViewport.apply();
 
-        batch.setProjectionMatrix(hudViewport.getCamera().combined);
-        batch.begin();
+        menuOverlay.setVisible(false);
+        gameOverOverlay.setVisible(false);
 
-        drawHud();
+        GameState gameState = controller.getGameState();
+        if (gameState.isPlayingOrReady()) {
+            batch.setProjectionMatrix(hudViewport.getCamera().combined);
+            batch.begin();
+            drawHud();
+            batch.end();
+            return;
+        }
 
-        batch.end();
+        if (gameState.isMenu() && !menuOverlay.isVisible()) {
+            menuOverlay.updateLabel();
+            menuOverlay.setVisible(true);
+        } else if (gameState.isGameOver() && !gameOverOverlay.isVisible()) {
+            gameOverOverlay.updateLabels();
+            gameOverOverlay.setVisible(true);
+        }
+
+        hudStage.act();
+        hudStage.draw();
     }
 
     private void drawHud() {

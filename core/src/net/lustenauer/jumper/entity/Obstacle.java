@@ -14,7 +14,7 @@ public class Obstacle extends EntityBase implements Pool.Poolable {
     private float angleDeg;
     private Rectangle sensor = new Rectangle();
     private float sensorAngleDeg;
-
+    private float radius = GameConfig.PLANET_HALF_SIZE - GameConfig.OBSTACLE_SIZE;
 
     /* CONSTRUCTORS */
     public Obstacle() {
@@ -27,14 +27,17 @@ public class Obstacle extends EntityBase implements Pool.Poolable {
     public void reset() {
         angleDeg = 0;
         sensorAngleDeg = 0;
+        radius = GameConfig.PLANET_HALF_SIZE - GameConfig.OBSTACLE_SIZE;
     }
 
-    public void setAngleDeg(float value) {
-        angleDeg = value % 360;
-        sensorAngleDeg = angleDeg + 20f;
+    public void update(float delta) {
 
         // obstacle
-        float radius = GameConfig.PLANET_HALF_SIZE;
+//        float radius = GameConfig.PLANET_HALF_SIZE;
+        if (radius < GameConfig.PLANET_HALF_SIZE){
+            radius+=delta;
+        }
+
         float originX = GameConfig.WORLD_CENTER_X;
         float originY = GameConfig.WORLD_CENTER_Y;
 
@@ -48,6 +51,13 @@ public class Obstacle extends EntityBase implements Pool.Poolable {
         float sensorY = originY + MathUtils.sinDeg(-sensorAngleDeg) * radius;
 
         sensor.set(sensorX, sensorY, getWidth(), getHeight());
+    }
+
+    public void setAngleDeg(float value) {
+        angleDeg = value % 360;
+        sensorAngleDeg = angleDeg + 20f;
+
+
     }
 
     public float getAngleDeg() {

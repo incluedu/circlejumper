@@ -7,9 +7,13 @@ import net.lustenauer.jumper.config.GameConfig;
 
 public class Coin extends EntityBase implements Pool.Poolable {
 
+    /*CONSTANTS */
+    public static final float SCALE_MAX = 1.0f;
+
     /* ATTRIBUTES */
     private float angleDeg;
     private boolean offset;
+    private float scale;
 
     /* CONSTRUCTORS */
     public Coin() {
@@ -17,6 +21,12 @@ public class Coin extends EntityBase implements Pool.Poolable {
     }
 
     /* PUBLIC METHODS */
+    public void update(float delta) {
+        if (scale < SCALE_MAX) {
+            scale += delta;
+        }
+    }
+
     public void setAngleDeg(float value) {
         angleDeg = value % 360;
 
@@ -44,8 +54,13 @@ public class Coin extends EntityBase implements Pool.Poolable {
         this.offset = offset;
     }
 
+    public float getScale() {
+        return scale;
+    }
+
     @Override
     public void reset() {
         offset = false;
+        scale = 0.0f;
     }
 }
